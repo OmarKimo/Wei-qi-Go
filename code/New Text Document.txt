@@ -1,0 +1,1 @@
+python self_play_ac.py --board-size 9 --learning-agent ac_v1.hdf5 --num-games 5000 --experience-out exp_0001.hdf5
