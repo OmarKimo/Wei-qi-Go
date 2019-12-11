@@ -16,16 +16,21 @@ def main():
     value = load_value_agent(h5py.File('test_alphago_value.h5', 'r'))                      #value
     bots = {
         gotypes.Player.black: agent.alphago.AlphaGoMCTS(strong_policy, fast_policy, value),
-        gotypes.Player.white: agent.alphago.AlphaGoMCTS(strong_policy, fast_policy, value),
+        #gotypes.Player.white: agent.alphago.AlphaGoMCTS(strong_policy, fast_policy, value),
+        gotypes.Player.white: agent.naive.RandomBot()
     }
     while not game.is_over():
-        time.sleep(0.3)  # <1>
+
 
         print(chr(27) + "[2J")  # <2>
         print_board(game.board)
         bot_move = bots[game.next_player].select_move(game)
+        if not bot_move:
+            bot_move = goboard.Move(is_resign=True)
         print_move(game.next_player, bot_move)
         game = game.apply_move(bot_move)
+    print("Winner is ", game.winner())
+
 
 
 if __name__ == '__main__':

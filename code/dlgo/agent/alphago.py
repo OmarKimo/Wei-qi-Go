@@ -31,9 +31,8 @@ class AlphaGoNode:
 # tag::select_node[]
     def select_child(self):
         return max(self.children.items(),
-                   key=lambda child: child[1].q_value + \
-                   child[1].u_value)
-# end::select_node[]
+                   key=lambda child: child[1].q_value + child[1].u_value)
+    # # end::select_node[]
 
 # tag::expand_children[]
     def expand_children(self, moves, probabilities):
@@ -67,7 +66,7 @@ class AlphaGoNode:
 class AlphaGoMCTS(Agent):
     def __init__(self, policy_agent, fast_policy_agent, value_agent,
                  lambda_value=0.5, num_simulations=1,
-                 depth=1, rollout_limit=1):
+                 depth=2, rollout_limit=5):
         self.policy = policy_agent
         self.rollout_policy = fast_policy_agent
         self.value = value_agent
@@ -90,7 +89,8 @@ class AlphaGoMCTS(Agent):
                         break
                     moves, probabilities = self.policy_probabilities(current_state)  # <4>
                     node.expand_children(moves, probabilities)  # <4>
-
+                if not node.children:
+                    continue
                 move, node = node.select_child()  # <5>
                 current_state = current_state.apply_move(move)  # <5>
 
@@ -112,6 +112,8 @@ class AlphaGoMCTS(Agent):
 # end::alphago_mcts_rollout[]
 
 # tag::alphago_mcts_selection[]
+        if not self.root.children:
+            return None
         move = max(self.root.children, key=lambda move:  # <1>
                    self.root.children.get(move).visit_count)  # <1>
 
@@ -147,6 +149,8 @@ class AlphaGoMCTS(Agent):
             encoder = self.rollout_policy.encoder
             valid_moves = [m for idx, m in enumerate(move_probabilities) 
                            if Move(encoder.decode_point_index(idx)) in game_state.legal_moves()]
+            if not valid_moves:
+                continue
             max_index, max_value = max(enumerate(valid_moves), key=operator.itemgetter(1))
             max_point = encoder.decode_point_index(max_index)
             greedy_move = Move(max_point)
