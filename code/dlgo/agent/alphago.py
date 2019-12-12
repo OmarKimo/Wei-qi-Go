@@ -66,7 +66,7 @@ class AlphaGoNode:
 class AlphaGoMCTS(Agent):
     def __init__(self, policy_agent, fast_policy_agent, value_agent,
                  lambda_value=0.5, num_simulations=1,
-                 depth=2, rollout_limit=5):
+                 depth=5, rollout_limit=1):
         self.policy = policy_agent
         self.rollout_policy = fast_policy_agent
         self.value = value_agent
@@ -101,6 +101,8 @@ class AlphaGoMCTS(Agent):
                 self.lambda_value * rollout  # <7>
 
             node.update_values(weighted_value)  # <8>
+
+
 # <1> From current state play out a number of simulations
 # <2> Play moves until the specified depth is reached.
 # <3> If the current node doesn't have any children...
@@ -126,6 +128,8 @@ class AlphaGoMCTS(Agent):
 # <1> Pick most visited child of the root as next move.
 # <2> If the picked move is a child, set new root to this child node.
 # end::alphago_mcts_selection[]
+
+
 
 # tag::alphago_policy_probs[]
     def policy_probabilities(self, game_state):
