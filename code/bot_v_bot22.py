@@ -134,7 +134,8 @@ def mInitConnectionWithClient():
                     botMove.resign()
                 elif move['type'] == "place":
                     botMove.play(gotypes.Point(row= move['point']['row'] + 1, col= move['point']['col'] + 1))
-                game = game.apply_move(botMove)
+                if(game.is_valid_move(botMove)):
+                    game = game.apply_move(botMove)
             print(f"Game= {game}")
         else :
             print(f'Unknown Mssg Received --- {recvdmssg}')
