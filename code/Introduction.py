@@ -68,6 +68,7 @@ class intro():
         self.speed = 1
         self.theme = None
         self.theme2= None
+        self.extra_text = None
 
 
 
@@ -91,16 +92,18 @@ class intro():
         button_list.append(ExitButton(game,1150,140,200,200,theme=self.theme2))
         return button_list
 
-    def setup(self,button_list,game):
+    def setup(self,button_list,game,text):
         arcade.set_background_color(arcade.color.CADET_BLUE)
         self.setup_theme()
         sound = arcade.load_sound("s.mp3")
         arcade.play_sound(sound)
+        self.extra_text = text
         return self.set_buttons(button_list,game)
 
 
     def draw(self,supr):
         arcade.draw_texture_rectangle(self.logo_center_x,self.logo_center_y, self.logo_width,self.logo_height, self.logo)
+        arcade.draw_text(self.extra_text, 0, 0, arcade.color.BLACK, 40)
         #arcade.draw_text(self.text, self.text_x, self.text_y, arcade.color.BLACK, self.text_font_size)
         supr.on_draw()
 

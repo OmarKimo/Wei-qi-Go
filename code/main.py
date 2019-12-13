@@ -2,13 +2,16 @@ from board import *
 from Introduction import *
 from settings import *
 from CPUxCPU import *
+
 Main_Menu_View = 0
 Board_View = 1
 PVC_Setting_View = 2
 CVC_Setting_View = 3
 
-def check_connection(IP,Port):
+
+def check_connection(IP, Port):
     return True
+
 
 class MyGame(arcade.Window):
     """ Main application class. """
@@ -24,10 +27,10 @@ class MyGame(arcade.Window):
         self.WHO_IS_CPU = None
         self.Board_Size = None
 
-    def setup_intro(self):
+    def setup_intro(self,winner):
         self.button_list.clear()
         self.Intro = intro(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.button_list = self.Intro.setup(self.button_list, self)
+        self.button_list = self.Intro.setup(self.button_list, self,winner)
 
     def setup_board(self):
         self.button_list.clear()
@@ -45,7 +48,7 @@ class MyGame(arcade.Window):
         self.button_list = self.CVC_S.setup(self.button_list, self)
 
     def setup(self):
-        self.setup_intro()
+        self.setup_intro("start new game!")
 
     def on_key_release(self, key, modifiers):
         """ Called whenever a user releases a key. """
@@ -54,17 +57,20 @@ class MyGame(arcade.Window):
                 self.close()
         elif self.CURRENT_VIEW == Board_View:  # the game
             if key == arcade.key.ESCAPE:
-                self.setup_intro()
+                self.setup_intro("start new game!")
                 self.CURRENT_VIEW = Main_Menu_View
                 self.WHO_IS_CPU = None
+            else:
+                self.G.keypressed(key)
+
         elif self.CURRENT_VIEW == PVC_Setting_View:  # the settings
             if key == arcade.key.ESCAPE:
-                self.setup_intro()
+                self.setup_intro("start new game!")
                 self.CURRENT_VIEW = Main_Menu_View
                 self.WHO_IS_CPU = None
         elif self.CURRENT_VIEW == CVC_Setting_View:  # the pause
             if key == arcade.key.ESCAPE:
-                self.setup_intro()
+                self.setup_intro("start new game!")
                 self.CURRENT_VIEW = Main_Menu_View
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -97,7 +103,7 @@ class MyGame(arcade.Window):
             self.G.game_update(x, y)
         elif self.CURRENT_VIEW == PVC_Setting_View:  # the settings
             temp = self.PVC_S.mouse_release(self.button_list)
-            if temp == 1:
+            if temp == 1:  # if i am  player 1 then i am black --> 2
                 self.WHO_IS_CPU = 2
             elif temp == 2:
                 self.WHO_IS_CPU = 1
@@ -117,24 +123,28 @@ class MyGame(arcade.Window):
         elif self.CURRENT_VIEW == CVC_Setting_View:  # the pause
             temp = self.CVC_S.mouse_release(self.button_list)
             if temp != -1:
-                if check_connection(temp[0],temp[1]):
+                if check_connection(temp[0], temp[1]):
                     self.Board_Size = (19, 19)
                     self.CURRENT_VIEW = Board_View
                     self.setup_board()
                 else:
                     self.CVC_S.connection_error()
 
-
     def on_update(self, dt):
         """ update everything """
         if self.CURRENT_VIEW == Main_Menu_View:  # the menu
             self.Intro.update(self.width)
         elif self.CURRENT_VIEW == Board_View:  # the game
-            self.G.game_update()
+            temp = self.G.game_update()
+            if temp != "start new game!":
+                self.setup_intro(temp)
+                self.CURRENT_VIEW = Main_Menu_View
+                self.WHO_IS_CPU = None
         elif self.CURRENT_VIEW == PVC_Setting_View:  # the settings
             None
         elif self.CURRENT_VIEW == CVC_Setting_View:  # the pause
             None
+
     def on_draw(self):
         """
         Render the screen.
@@ -148,7 +158,6 @@ class MyGame(arcade.Window):
             self.PVC_S.draw(super())
         elif self.CURRENT_VIEW == CVC_Setting_View:  # the pause
             self.CVC_S.draw(super())
-
 
 
 def main():
