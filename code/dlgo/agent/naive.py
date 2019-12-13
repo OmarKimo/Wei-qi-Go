@@ -26,4 +26,15 @@ class RandomBot(Agent):
         if not candidates:
             return Move.pass_turn()
         return Move.play(random.choice(candidates))
+
+
+    def make_move(self, game_state,row,col):
+        """Choose a random valid move that preserves our own eyes."""
+        candidate = Point(row=row, col=col)
+        if game_state.is_valid_move(Move.play(candidate)) and \
+                not is_point_an_eye(game_state.board,
+                                    candidate,
+                                    game_state.next_player):
+            return Move.play(candidate)
+        return None
 # end::random_bot[]

@@ -7,14 +7,16 @@ from dlgo.gotypes import Player, Point
 from dlgo.scoring import compute_game_result
 from dlgo import zobrist
 import dlgo.utils
+from dlgo.goboard_slow import Move
+from dlgo.agent.helpers import is_point_an_eye
 
 #bot define
 from dlgo import goboard_fast as goboard
 from dlgo import agent, gotypes
 from dlgo.rl import load_value_agent
 
-board_size = 19
-game = goboard.GameState.new_game(board_size)
+bot_board_size = 19
+game = goboard.GameState.new_game(bot_board_size)
 fast_policy = agent.load_prediction_agent(h5py.File('test_alphago_sl_policy.h5', 'r'))     #sl
 strong_policy = agent.load_policy_agent(h5py.File('test_alphago_rl_policy.h5', 'r'))       #rl
 value = load_value_agent(h5py.File('test_alphago_value.h5', 'r'))                      #value
@@ -22,6 +24,11 @@ bots = {
     gotypes.Player.black: agent.alphago.AlphaGoMCTS(strong_policy, fast_policy, value),
     gotypes.Player.white: agent.alphago.AlphaGoMCTS(strong_policy, fast_policy, value),
     #gotypes.Player.white: agent.naive.RandomBot()
+}
+Random_Bot=agent.naive.RandomBot()
+player_turn={
+    1 : gotypes.Player.white,
+    2 : gotypes.Player.black,
 }
 
 
@@ -98,6 +105,7 @@ class Game_Logic:
         global BOARD_SIZE
         global STONE_RAD
         global DISTANCE_BETWEEN_GRID_LINES
+        global bots,game,bot_board_size
         self.stone_list = None  # contains all of the stones objects and this is the list to draw
         self.stone_matrix = None  # contains the position (i,j) and the color of each stone at the current stage
         self.board_img = None  # contains the texture of the board
@@ -125,6 +133,15 @@ class Game_Logic:
         self.sound = None
         self.music = None
         BOARD_SIZE = board_size
+
+        if BOARD_SIZE[0] < 18:
+            bot_board_size=board_size
+            game = goboard.GameState.new_game(bot_board_size)
+            bots = {
+                gotypes.Player.white: agent.naive.RandomBot(),
+                gotypes.Player.black: agent.naive.RandomBot(),
+            }
+
         STONE_RAD = min(SCREEN_WIDTH / (BOARD_SIZE[0] + 1), PLAYABLE_SCREEN_HEIGHT / (BOARD_SIZE[1] + 1)) / 2.5
         DISTANCE_BETWEEN_GRID_LINES = min((get_x_corresponding_to_col(1) - get_x_corresponding_to_col(0)),
                                           (get_y_corresponding_to_row(0) - get_y_corresponding_to_row(1)))
@@ -178,7 +195,7 @@ class Game_Logic:
         self.p_v_c_stone = Stone(mouse_x, mouse_y, STONE_RAD / 2.0, fill_col, outline_col)
 
     def place_player_stone(self, mouse_x, mouse_y):
-        global game, bots
+        global game, bots,Random_Bot,player_turn
         if self.MODE == 0 or self.CURRENT_TURN == self.WHO_IS_CPU:
             return
 
@@ -204,35 +221,31 @@ class Game_Logic:
         i = i - 1
 
         if self.stone_matrix[j][i] == 0:
-            self.stone_matrix[j][i] = self.CURRENT_TURN
+            #self.stone_matrix[j][i] = self.CURRENT_TURN
             row = game.board.num_rows-j
             col = i + 1
-            if self.CURRENT_TURN == 1:
-                player = gotypes.Player.white
-            else:
-                player = gotypes.Player.black
-            mymove = goboard.Move(point=gotypes.Point(row=row, col=col))
-            game = game.apply_move(mymove)
+            #game.next_player=player_turn[self.CURRENT_TURN]
+            Player_move = Random_Bot.make_move(game,row=row,col=col)
+            if not Player_move:
+                return False
+            game = game.apply_move(Player_move)
             return True
 
         return False
 
     def update_stone_matrix(self, mouse_x, mouse_y):
-        global game,bots
+        global game,bots,player_turn
         """ update stone matrix from the other team"""
         stone_placed = False
 
         if self.MODE == 1 and self.CURRENT_TURN == self.WHO_IS_CPU and not self.first_stone:
             # get hint from cpu
-            if self.CURRENT_TURN == 1:
-                bot_move = bots[gotypes.Player.white].select_move(game)
-            else:
-                bot_move = bots[gotypes.Player.black].select_move(game)
+            bot_move = bots[player_turn[self.CURRENT_TURN]].select_move(game)
             if not bot_move:
                 bot_move = goboard.Move(is_resign=True)
                 return
-            rx = bot_move.point.col
-            ry = bot_move.point.row
+            rx = bot_move.point.col-1
+            ry = game.board.num_rows-bot_move.point.row
             self.cpu_hint_x_y = [self.get_x_corresponding_to_col(rx), self.get_y_corresponding_to_row(ry)]
             self.hint_text = "    The best \n" \
                              "\n   position to \n" \
@@ -244,10 +257,7 @@ class Game_Logic:
             self.cpu_hint_x_y = [4 * -STONE_RAD, 4 * -STONE_RAD]
 
         if self.MODE == 0 or self.CURRENT_TURN == self.WHO_IS_CPU:
-            if self.CURRENT_TURN == 1:
-                bot_move = bots[gotypes.Player.white].select_move(game)
-            else:
-                bot_move = bots[gotypes.Player.black].select_move(game)
+            bot_move = bots[player_turn[self.CURRENT_TURN]].select_move(game)
             if not bot_move:
                 bot_move = goboard.Move(is_resign=True)
                 return
@@ -262,6 +272,7 @@ class Game_Logic:
                         self.stone_matrix[game.board.num_rows-row][col-1] = 2
                     else:
                         self.stone_matrix[game.board.num_rows-row][col-1] = 0
+            #dlgo.utils.print_board(game.board)
             stone_placed = True
         else:  # if this is player turn
             stone_placed= self.place_player_stone(mouse_x, mouse_y)
