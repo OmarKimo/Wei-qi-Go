@@ -66,7 +66,7 @@ class AlphaGoNode:
 class AlphaGoMCTS(Agent):
     def __init__(self, policy_agent, fast_policy_agent, value_agent,
                  lambda_value=0.5, num_simulations=1,
-                 depth=5, rollout_limit=1):
+                 depth=1, rollout_limit=1):
         self.policy = policy_agent
         self.rollout_policy = fast_policy_agent
         self.value = value_agent

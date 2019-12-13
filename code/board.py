@@ -133,9 +133,8 @@ class Game_Logic:
         self.sound = None
         self.music = None
         BOARD_SIZE = board_size
-
-        if BOARD_SIZE[0] < 18:
-            bot_board_size=board_size
+        bot_board_size = board_size
+        if bot_board_size < 18:
             game = goboard.GameState.new_game(bot_board_size)
             bots = {
                 gotypes.Player.white: agent.naive.RandomBot(),
@@ -174,6 +173,7 @@ class Game_Logic:
         self.first_stone = True  # first play
         self.second_stone = True
         self.sound = arcade.load_sound("sound.mp3")
+        #game.next_player = player_turn[self.CURRENT_TURN]
 
     def change_turn(self):
         if self.CURRENT_TURN == 1:
