@@ -19,7 +19,8 @@ states = {
 
 
 name = "GoCHI"
-url = "ws://localhost:8080"
+ServerPort = 8080
+url = f"ws://localhost:{ServerPort}"
 
 websocket = None
 my_color = None
@@ -46,11 +47,6 @@ def mInitConnectionWithBot(clientno):
 
     print(f"initiaing the connection With Bot")
 
-    # if (clientno == 1):
-    #     ClienPortNumber = "8500"
-
-    # else : ClienPortNumber = "9000"
-
     context = zmq.Context()
     socket2 = context.socket(zmq.REQ)
     socket2.connect("tcp://localhost:%s" % ClienPortNumber)
@@ -70,25 +66,25 @@ def mInitConnectionWithBot(clientno):
             RequestedMove = { "type": "MOVE", "move": json.loads(finaaaaaaaaaaaalrslt) }
             GoThinkToken = False
 
-        # if ( ClientGameConfiguration != None):
-        #     template = ClientGameConfiguration
-        #     SendMssgToBot = {
-        #         "type" : "config",
-        #         "value" : template
-        #     }
-        #     socket2.send_string(json.dumps(SendMssgToBot))
-        #     print (socket2.recv())
-        #     ClientGameConfiguration = None
+        if ( ClientGameConfiguration != None):
+            template = ClientGameConfiguration
+            SendMssgToBot = {
+                "type" : "config",
+                "value" : template
+            }
+            socket2.send_string(json.dumps(SendMssgToBot))
+            print (socket2.recv())
+            ClientGameConfiguration = None
 
-        # if ( OpponentMove != None):
-        #     template = OpponentMove
-        #     SendMssgToBot = {
-        #         "type" : "opponentmove",
-        #         "value" : template
-        #     }
-        #     socket2.send_string(json.dumps(SendMssgToBot))
-        #     print (socket2.recv())
-        #     OpponentMove = None
+        if ( OpponentMove != None):
+            template = OpponentMove
+            SendMssgToBot = {
+                "type" : "opponentmove",
+                "value" : template
+            }
+            socket2.send_string(json.dumps(SendMssgToBot))
+            print (socket2.recv())
+            OpponentMove = None
 
     
 class myThread (threading.Thread):
@@ -100,34 +96,6 @@ class myThread (threading.Thread):
 
    def run(self):
         mInitConnectionWithBot(self.threadID)
-
-
-async def blocking_to_async(func, *args):
-    result = await asyncio.wait(fs={
-        asyncio.get_event_loop().run_in_executor(
-            concurrent.futures.ThreadPoolExecutor(1),
-            func, *args
-        )
-    })
-    return_val = tuple(element.result() for element in tuple(result[0]))
-    return return_val[0] if len(return_val) == 1 else return_val
-
-
-async def dummy():
-    global GoThinkToken
-    GoThinkToken = True
-
-
-def send_valid(valid, remaning_time, message=""):
-    pass
-
-
-def send_opponent_move(type, X, Y, time):
-    pass
-
-
-def send_score(reason, winner, B_score, B_time, W_score, W_time):
-    pass
 
 
 async def handle_init():
@@ -197,20 +165,15 @@ async def handle_thinking():
 
         
 
-
-
 async def handle_await_response():
     global ClientState, websocket
     msg = await websocket.recv()
     msg = json.loads(msg)
     if msg["type"] == "VALID": #rt  for both
-        # send_valid(valid=True, remaning_time=msg["remainingTime"])
         ClientState = states["IDLE"]
 
     elif msg["type"] == "INVALID":
-        # send_valid(
-        #     valid=False, remaning_time=msg["remainingTime"], message=msg["message"])
-        ClientState = states["THINKING"]
+          ClientState = states["THINKING"]
     elif msg["type"] == "END":
         handle_end(msg)
 
@@ -247,8 +210,11 @@ async def main():
             elif ClientState == states["IDLE"]:
                 await handle_idle()
         except Exception as e:
-            print("type error: " + str(e))
-            ClientState = states["INIT"]
+            # print("type error: " + str(e))
+            if ( str(e).__eq__("name 'send_score' is not defined")):
+                ClientState = states["READY"]
+            else :
+                ClientState = states["INIT"]
 
 
 if __name__ == "__main__":
@@ -256,3 +222,4 @@ if __name__ == "__main__":
     thread1.setDaemon(True)
     thread1.start() 
     asyncio.run(main())
+
