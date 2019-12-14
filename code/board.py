@@ -96,6 +96,17 @@ def count(game,player):
     return num
 
 
+def score(game):
+    player_score = {
+        gotypes.Player.white: 0,
+        gotypes.Player.black: 0,
+    }
+    res=compute_game_result(game)
+    #print(res.b,res.w)
+    player_score[gotypes.Player.white]=res.w
+    player_score[gotypes.Player.black]=res.b
+    return player_score
+
 class Stone:
     def __init__(self, center_x, center_y, rad, fill_color, outline_color):
         self.center_x = center_x
@@ -156,6 +167,7 @@ class Game_Logic:
         global game
         global bots
         global Resign
+        global player_prisonesr
         Resign = 0
         arcade.set_background_color(BACKGROUND_COLOR)
 
@@ -165,15 +177,13 @@ class Game_Logic:
         self.p_v_c_stone = None
 
         self.MODE = MODE  # 0 for CPU VS CPU , 1 for Player VS CPU
+        self.CURRENT_TURN = 2
         if MODE == 1:
             if WHO_IS_CPU == 2:
-                self.CURRENT_TURN = 2  # Black
                 self.WHO_IS_CPU = 1  # White
             else:
-                self.CURRENT_TURN = 2
                 self.WHO_IS_CPU = 2
         else:
-            self.CURRENT_TURN = 1  # 1 for player 1 ,2 for player 2
             self.WHO_IS_CPU = WHO_IS_CPU  # 1 if player 1 is the cpu, 2 if player 2 is the cpu. checked only in the
         # Player VS CPU mode
 
@@ -195,6 +205,7 @@ class Game_Logic:
         self.sound = arcade.load_sound("sound.mp3")
         bot_board_size = BOARD_SIZE[0]
         game = goboard.GameState.new_game(bot_board_size)
+        game.next_player = player_turn[self.CURRENT_TURN]
         if bot_board_size < 18:
             bots = {
                 gotypes.Player.white: agent.naive.RandomBot(),
@@ -205,6 +216,8 @@ class Game_Logic:
                 gotypes.Player.black: agent.alphago.AlphaGoMCTS(strong_policy, fast_policy, value),
                 gotypes.Player.white: agent.alphago.AlphaGoMCTS(strong_policy, fast_policy, value),
             }
+        player_prisonesr[gotypes.Player.white] = 0
+        player_prisonesr[gotypes.Player.black] = 0
 
     def change_turn(self):
         if self.CURRENT_TURN == 1:
