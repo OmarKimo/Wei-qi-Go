@@ -38,7 +38,7 @@ player_prisonesr ={
 # Set up the constants
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-INFO_SCREEN_HEIGHT = 50
+INFO_SCREEN_HEIGHT = 33
 INFO_SCREEN_WIDTH = SCREEN_WIDTH
 FORCE_ASPECT_RATIO = 1
 PLAYABLE_SCREEN_HEIGHT = SCREEN_HEIGHT - INFO_SCREEN_HEIGHT
@@ -347,15 +347,34 @@ class Game_Logic:
                 PLAYABLE_SCREEN_HEIGHT / (BOARD_SIZE[1] + 1) + row * PLAYABLE_SCREEN_HEIGHT / (BOARD_SIZE[1] + 1))
 
     def End_game(self):
+        arr = ["","","","",""]
         if game.is_over():
-            return str(game.winner()) + "has won the game!"
+            arr[0] = str(game.winner())
+            arr[1] = "Black has captured: " + str(self.PLAYER_1_N_OF_PRISONERS)
+            arr[2] = "Black score: " + str(self.PLAYER_1_SCORE)
+            arr[3] = "White has captured: " + str(self.PLAYER_2_N_OF_PRISONERS)
+            arr[4] = "White score: " + str(self.PLAYER_2_SCORE)
+            return arr
         if Resign != 0 and Resign == 1:
-            return "White has resigned , Black is the winner!"
+            arr[0] = "White has resigned , Black is the winner!"
+            arr[1] = "Black has captured: " + str(self.PLAYER_1_N_OF_PRISONERS)
+            arr[2] = "Black score: " + str(self.PLAYER_1_SCORE)
+            arr[3] = "White has captured: " + str(self.PLAYER_2_N_OF_PRISONERS)
+            arr[4] = "White score: " + str(self.PLAYER_2_SCORE)
+            return arr
         elif Resign != 0 and Resign == 2:
-            return "Black has resigned , White is the winner!"
+            arr[0] = "Black has resigned , White is the winner!"
+            arr[1] = "Black has captured: " + str(self.PLAYER_1_N_OF_PRISONERS)
+            arr[2] = "Black score: " + str(self.PLAYER_1_SCORE)
+            arr[3] = "White has captured: " + str(self.PLAYER_2_N_OF_PRISONERS)
+            arr[4] = "White score: " + str(self.PLAYER_2_SCORE)
+            return arr
         return "start new game!"
 
     def game_update(self, mouse_x=-1, mouse_y=-1):
+        self.PLAYER_1_N_OF_PRISONERS = player_prisonesr.get(gotypes.Player.black)
+        self.PLAYER_2_N_OF_PRISONERS = player_prisonesr.get(gotypes.Player.white)
+
         self.update_stone_matrix(mouse_x, mouse_y)
         self.stone_list.clear()
         row = 0
@@ -437,37 +456,32 @@ class Game_Logic:
 
         start_x = 0
         start_y = SCREEN_HEIGHT - FONT_SIZE
-        arcade.draw_text("PLAYER 1 REMAINING TIME : " + str(self.PLAYER_1_REMAINING_TIME), start_x, start_y, TEXT_COLOR
+        arcade.draw_text("Black REMAINING TIME : " + str(self.PLAYER_1_REMAINING_TIME), start_x, start_y, TEXT_COLOR
                          , FONT_SIZE)
 
         start_y = start_y - FONT_SIZE
-        arcade.draw_text("PLAYER 1 SCORE : " + str(self.PLAYER_1_SCORE), start_x, start_y, TEXT_COLOR
-                         , FONT_SIZE)
-
-        start_y = start_y - FONT_SIZE
-        arcade.draw_text("PLAYER 1 NUMBER OF PRISONERS : " + str(self.PLAYER_1_N_OF_PRISONERS), start_x, start_y,
+        arcade.draw_text("Black NUMBER OF PRISONERS : " + str(self.PLAYER_1_N_OF_PRISONERS), start_x, start_y,
                          TEXT_COLOR
                          , FONT_SIZE)
 
         start_x = INFO_SCREEN_WIDTH * 2.82 / 4
         start_y = SCREEN_HEIGHT - FONT_SIZE
 
-        arcade.draw_text("PLAYER 2 REMAINING TIME : " + str(self.PLAYER_1_REMAINING_TIME), start_x, start_y, TEXT_COLOR
+        arcade.draw_text("White REMAINING TIME : " + str(self.PLAYER_2_REMAINING_TIME), start_x, start_y, TEXT_COLOR
                          , FONT_SIZE)
 
         start_y = start_y - FONT_SIZE
-        arcade.draw_text("PLAYER 2 SCORE : " + str(self.PLAYER_1_SCORE), start_x, start_y, TEXT_COLOR
-                         , FONT_SIZE)
-
-        start_y = start_y - FONT_SIZE
-        arcade.draw_text("PLAYER 2 NUMBER OF PRISONERS : " + str(self.PLAYER_1_N_OF_PRISONERS), start_x, start_y,
+        arcade.draw_text("White NUMBER OF PRISONERS : " + str(self.PLAYER_2_N_OF_PRISONERS), start_x, start_y,
                          TEXT_COLOR
                          , FONT_SIZE)
 
         start_x = INFO_SCREEN_WIDTH * .38
         start_y = SCREEN_HEIGHT - FONT_SIZE * 2
-        arcade.draw_text("CURRENT TURN IS PLAYER : " + str(self.CURRENT_TURN), start_x, start_y, TEXT_COLOR
-                         , FONT_SIZE)
+        if self.CURRENT_TURN == 1:
+            arcade.draw_text("CURRENT TURN IS PLAYER : " + "White", start_x, start_y, TEXT_COLOR, FONT_SIZE)
+        else:
+            arcade.draw_text("CURRENT TURN IS PLAYER : " + "Black", start_x, start_y, TEXT_COLOR, FONT_SIZE)
+
 
     def draw_stones(self):
         for st in self.stone_list:

@@ -1,12 +1,16 @@
+import arcade as arcade
+
 from board import *
 from Introduction import *
 from settings import *
 from CPUxCPU import *
+from results import *
 
 Main_Menu_View = 0
 Board_View = 1
 PVC_Setting_View = 2
 CVC_Setting_View = 3
+Results_View = 4
 
 
 def check_connection(IP, Port):
@@ -22,6 +26,7 @@ class MyGame(arcade.Window):
         self.G = None
         self.PVC_S = None
         self.CVC_S = None
+        self.RES = None
         self.CURRENT_VIEW = Main_Menu_View  # 0 for main menu , 1 for the game , 2 for settings , 3 for pause
         self.MODE = None
         self.WHO_IS_CPU = None
@@ -46,6 +51,11 @@ class MyGame(arcade.Window):
         self.button_list.clear()
         self.CVC_S = cvc_Setting(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.button_list = self.CVC_S.setup(self.button_list, self)
+
+    def setup_res(self,arr):
+        self.button_list.clear()
+        self.RES = results_Screen(SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.RES.setup(arr)
 
     def setup(self):
         self.setup_intro("start new game!")
@@ -73,6 +83,11 @@ class MyGame(arcade.Window):
                 self.setup_intro("start new game!")
                 self.CURRENT_VIEW = Main_Menu_View
 
+        elif self.CURRENT_VIEW == Results_View:
+            if key == arcade.key.ESCAPE:
+                self.setup_intro("start new game!")
+                self.CURRENT_VIEW = Main_Menu_View
+
     def on_mouse_motion(self, x, y, dx, dy):
         """ Called to update our objects. Happens approximately 60 times per second."""
         if self.CURRENT_VIEW == Main_Menu_View:  # the menu
@@ -83,6 +98,9 @@ class MyGame(arcade.Window):
             None
         elif self.CURRENT_VIEW == CVC_Setting_View:  # the pause
             None
+        elif self.CURRENT_VIEW == Results_View:  # the pause
+            None
+
 
     def on_mouse_release(self, x, y, button, modifiers):
         """
@@ -137,9 +155,8 @@ class MyGame(arcade.Window):
         elif self.CURRENT_VIEW == Board_View:  # the game
             temp = self.G.game_update()
             if temp != "start new game!":
-                self.setup_intro(temp)
-                self.CURRENT_VIEW = Main_Menu_View
-                self.WHO_IS_CPU = None
+                self.setup_res(temp)
+                self.CURRENT_VIEW = Results_View
         elif self.CURRENT_VIEW == PVC_Setting_View:  # the settings
             None
         elif self.CURRENT_VIEW == CVC_Setting_View:  # the pause
@@ -158,6 +175,8 @@ class MyGame(arcade.Window):
             self.PVC_S.draw(super())
         elif self.CURRENT_VIEW == CVC_Setting_View:  # the pause
             self.CVC_S.draw(super())
+        elif self.CURRENT_VIEW == Results_View:  # the pause
+            self.RES.draw(super())
 
 
 def main():
