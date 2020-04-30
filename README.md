@@ -1,2 +1,2 @@
 # Wei-qi-Go
-ML agent to solve GO games.
+### ML agent to solve GO games.
